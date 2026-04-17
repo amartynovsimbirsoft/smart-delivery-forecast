@@ -1,0 +1,238 @@
+# ============================================
+# Python
+# ============================================
+
+# Виртуальное окружение
+.venv/
+venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+
+# Файлы компиляции Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+eggs/
+.eggs/
+*.manifest
+*.spec
+
+# Инструменты тестирования и отладки
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.mypy_cache/
+.dmypy.json
+dmypy.json
+.pyre/
+.ruff_cache/
+
+# Логи и временные файлы
+*.log
+*.pid
+*.seed
+*.pid.lock
+*.sqlite
+*.sqlite3
+
+# Jupyter Notebook
+.ipynb_checkpoints/
+*.ipynb
+
+# ============================================
+# Streamlit
+# ============================================
+
+.streamlit/secrets.toml
+.streamlit/config.toml
+
+# ============================================
+# FastAPI / Backend
+# ============================================
+
+*.db
+*.db-journal
+
+# ============================================
+# Vue3 / Frontend
+# ============================================
+
+# Зависимости
+src/vue3/node_modules/
+src/vue3/dist/
+src/vue3/.vite/
+
+# Логи Vue
+src/vue3/npm-debug.log*
+src/vue3/yarn-debug.log*
+src/vue3/yarn-error.log*
+src/vue3/.pnpm-debug.log*
+
+# Редакторы и IDE (Vue)
+src/vue3/.idea/
+src/vue3/.vscode/
+src/vue3/*.suo
+src/vue3/*.ntvs*
+src/vue3/*.njsproj
+src/vue3/*.sln
+src/vue3/*.sw?
+
+# Переменные окружения Vue
+src/vue3/.env.local
+src/vue3/.env.*.local
+
+# ============================================
+# Docker
+# ============================================
+
+# Файлы с敏感ной информацией
+.env
+.env.*
+!.env.example
+
+# Docker volumes (локальные)
+data/volumes/
+postgres_data/
+timescaledb_data/
+mlflow_artifacts/
+nifi_data/
+nifi_conf/
+
+# Временные файлы сборки
+*.tar
+*.tar.gz
+docker-compose.override.yml
+
+# ============================================
+# NiFi
+# ============================================
+
+# Чувствительные данные воркфлоу
+deploy/docker/nifi/conf/*.key
+deploy/docker/nifi/conf/*.p12
+deploy/docker/nifi/conf/*.jks
+
+# Логи NiFi
+nifi/logs/
+*.nifi.bak
+
+# ============================================
+# MLflow
+# ============================================
+
+mlruns/
+mlartifacts/
+mlflow_artifacts/
+.mlflow/
+
+# ============================================
+# Данные (сырые и обработанные)
+# ============================================
+
+# CSV и Excel файлы с реальными данными
+data/raw/*.csv
+data/raw/*.xlsx
+data/processed/*.csv
+data/processed/*.xlsx
+data/weather/*.json
+data/weather/*.csv
+
+# Исключить примеры данных (если нужны в репозитории)
+!data/sample/*.csv
+!data/sample/*.xlsx
+
+# ============================================
+# Переменные окружения и API ключи
+# ============================================
+
+.env
+.env.production
+.env.local
+.env.*.local
+*.key
+*.pem
+*.crt
+secrets/
+config/secrets.yaml
+
+# ============================================
+# IDE и редакторы
+# ============================================
+
+# VS Code
+.vscode/
+*.code-workspace
+.history/
+
+# PyCharm / IntelliJ
+.idea/
+*.iml
+*.iws
+
+# Sublime Text
+*.sublime-project
+*.sublime-workspace
+
+# Vim
+*.swp
+*.swo
+*~
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# Linux
+.directory
+*.orig
+
+# ============================================
+# Документация и временные файлы
+# ============================================
+
+*.tmp
+*.bak
+*.swp
+*~
+~$*
+*.cache
+
+# Отчёты и экспорты (если есть)
+exports/
+reports/*.xlsx
+reports/*.csv
+
+# ============================================
+# Служебные файлы
+# ============================================
+
+# История команд
+.history/
+.bash_history
+.zsh_history
+
+# Файлы сессий
+.session
+.session.sql
+
+# Python пакеты
+*.egg-info/
+*.egg
+pip-wheel-metadata/
+share/python-wheels/

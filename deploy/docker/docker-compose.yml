@@ -1,0 +1,164 @@
+version: '3.8'
+
+services:
+  # ============================================
+  # Базы данных
+  # ============================================
+  
+  postgres:
+    image: postgres:15
+    container_name: forecast_postgres
+    environment:
+      POSTGRES_USER: forecast_user
+      POSTGRES_PASSWORD: forecast_password
+      POSTGRES_DB: forecast_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - forecast_network
+    restart: unless-stopped
+
+  timescaledb:
+    image: timescale/timescaledb-ha:pg15-all
+    container_name: forecast_timescaledb
+    environment:
+      POSTGRES_USER: forecast_user
+      POSTGRES_PASSWORD: forecast_password
+      POSTGRES_DB: forecast_tsdb
+    ports:
+      - "5433:5432"
+    volumes:
+      - timescaledb_data:/var/lib/postgresql/data
+    networks:
+      - forecast_network
+    restart: unless-stopped
+
+  # ============================================
+  # MLflow
+  # ============================================
+  
+  mlflow:
+    image: ghcr.io/mlflow/mlflow:v2.9.2
+    container_name: forecast_mlflow
+    command: |
+      mlflow server
+      --host 0.0.0.0
+      --port 5000
+      --backend-store-uri postgresql://forecast_user:forecast_password@postgres:5432/forecast_db
+      --default-artifact-root ./mlflow_artifacts
+    environment:
+      MLFLOW_TRACKING_URI: http://localhost:5000
+    ports:
+      - "5000:5000"
+    depends_on:
+      - postgres
+    volumes:
+      - mlflow_artifacts:/mlflow_artifacts
+    networks:
+      - forecast_network
+    restart: unless-stopped
+
+  # ============================================
+  # Apache NiFi
+  # ============================================
+  
+  nifi:
+    image: apache/nifi:1.28.1
+    container_name: forecast_nifi
+    environment:
+      NIFI_WEB_HTTP_PORT: 8080
+      NIFI_CLUSTER_IS_NODE: false
+      NIFI_SENSITIVE_PROPS_KEY: 'nifi_sensitive_key'
+    ports:
+      - "8080:8080"
+      - "6007:6007"
+    volumes:
+      - nifi_data:/opt/nifi/nifi-current/data
+      - nifi_conf:/opt/nifi/nifi-current/conf
+      - ./nifi/templates:/opt/nifi/nifi-current/templates  # для шаблонов воркфлоу
+    networks:
+      - forecast_network
+    restart: unless-stopped
+
+  # ============================================
+  # Бэкенд (FastAPI)
+  # ============================================
+  
+  backend:
+    build:
+      context: ../../
+      dockerfile: deploy/docker/Dockerfile.backend
+    container_name: forecast_backend
+    environment:
+      DATABASE_URL: postgresql://forecast_user:forecast_password@postgres:5432/forecast_db
+      TIMESCALE_URL: postgresql://forecast_user:forecast_password@timescaledb:5432/forecast_tsdb
+      MLFLOW_TRACKING_URI: http://mlflow:5000
+      WEATHER_API_KEY: ${WEATHER_API_KEY:-your_api_key_here}  # из .env файла
+    ports:
+      - "8000:8000"
+    depends_on:
+      - postgres
+      - timescaledb
+      - mlflow
+    networks:
+      - forecast_network
+    restart: unless-stopped
+    command: uvicorn src.api.main:app --host 0.0.0.0 --port 8000 --reload
+
+  # ============================================
+  # Streamlit (дашборд)
+  # ============================================
+  
+  streamlit:
+    build:
+      context: ../../
+      dockerfile: deploy/docker/Dockerfile.streamlit
+    container_name: forecast_streamlit
+    environment:
+      DATABASE_URL: postgresql://forecast_user:forecast_password@postgres:5432/forecast_db
+      TIMESCALE_URL: postgresql://forecast_user:forecast_password@timescaledb:5432/forecast_tsdb
+      BACKEND_URL: http://backend:8000
+    ports:
+      - "8501:8501"
+    depends_on:
+      - backend
+    networks:
+      - forecast_network
+    restart: unless-stopped
+
+  # ============================================
+  # Vue3 (дашборд)
+  # ============================================
+
+  vue3:
+    build:
+      context: ../../
+      dockerfile: deploy/docker/Dockerfile.vue3
+    container_name: forecast_vue3
+    ports:
+      - "5173:80"  # или 80:80 для продакшена
+    depends_on:
+      - backend
+    networks:
+      - forecast_network
+
+# ============================================
+# Тома для персистентности данных
+# ============================================
+
+volumes:
+  postgres_data:
+  timescaledb_data:
+  mlflow_artifacts:
+  nifi_data:
+  nifi_conf:
+
+# ============================================
+# Сеть
+# ============================================
+
+networks:
+  forecast_network:
+    driver: bridge
