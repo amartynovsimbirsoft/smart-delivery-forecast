@@ -40,14 +40,10 @@ services:
   # ============================================
   
   mlflow:
-    image: ghcr.io/mlflow/mlflow:v2.9.2
+    build:
+      context: ../../
+      dockerfile: deploy/docker/Dockerfile.mlflow
     container_name: forecast_mlflow
-    command: |
-      mlflow server
-      --host 0.0.0.0
-      --port 5000
-      --backend-store-uri postgresql://forecast_user:forecast_password@postgres:5432/forecast_db
-      --default-artifact-root ./mlflow_artifacts
     environment:
       MLFLOW_TRACKING_URI: http://localhost:5000
     ports:
@@ -55,7 +51,7 @@ services:
     depends_on:
       - postgres
     volumes:
-      - mlflow_artifacts:/mlflow_artifacts
+      - mlflow_artifacts:/mlflow/artifacts
     networks:
       - forecast_network
     restart: unless-stopped
@@ -138,11 +134,12 @@ services:
       dockerfile: deploy/docker/Dockerfile.vue3
     container_name: forecast_vue3
     ports:
-      - "5173:80"  # или 80:80 для продакшена
+      - "5173:80"
     depends_on:
       - backend
     networks:
       - forecast_network
+    restart: unless-stopped
 
 # ============================================
 # Тома для персистентности данных
